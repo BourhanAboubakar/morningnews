@@ -4,8 +4,38 @@ var router = express.Router();
 var uid2 = require('uid2')
 var SHA256 = require('crypto-js/sha256')
 var encBase64 = require('crypto-js/enc-base64')
-
+var wishlistModel = require('../models/wishlist')
 var userModel = require('../models/users')
+
+router.post('/wishlist', async function(req,res,next){
+
+  var wishlistExist= await wishlistModel.findOne({title: req.body.title})
+  if(wishlistExist === null){
+  var newwishlist= new wishlistModel({
+    title: req.body.title,
+    description: req.body.description,
+    url: req.body.url,
+    urlToImage: req.body.urlToImage,
+    content: req.body.content,
+    country: req.body.country
+  })}
+
+  saveWishList = await newwishlist.save()
+
+  var user = await userModel.findOne({token: req.body.token}).populate('wishlist').exec();
+  var userwishlist = user.wishlist
+  userwishlist.push(user)
+
+  await userModel.updateOne(
+  {token: req.body.token},
+  {wishlist: userwishlist}
+);
+res.json({result: true})
+});
+
+
+
+
 
 
 router.post('/sign-up', async function(req,res,next){
@@ -53,7 +83,7 @@ router.post('/sign-up', async function(req,res,next){
   
 
   res.json({result, saveUser, error, token})
-})
+});
 
 router.post('/sign-in', async function(req,res,next){
 

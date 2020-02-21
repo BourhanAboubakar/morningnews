@@ -14,6 +14,7 @@ function ScreenArticlesBySource(props) {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
 
+
   useEffect(() => {
     const findArticles = async() => {
       const data = await fetch(`https://newsapi.org/v2/top-headlines?sources=${props.match.params.id}&apiKey=5374ed86d7454b5b8982b7da22c6428c`)
@@ -29,7 +30,6 @@ function ScreenArticlesBySource(props) {
     setVisible(true)
     setTitle(title)
     setContent(content)
-
   }
 
   var handleOk = e => {
@@ -40,6 +40,27 @@ function ScreenArticlesBySource(props) {
   var handleCancel = e => {
     console.log(e)
     setVisible(false)
+  }
+
+  var saveArticle = async (article) =>  {
+
+    props.addToWishList(article)
+
+    var data = JSON.stringify({
+      title: article.title,
+      description: article.description,
+      url: article.url,
+      urlToImage: article.urlToImage,
+      content: article.content,
+      country: article.country
+    });
+    
+    await fetch('/wishlist', {
+      // Options
+      method: 'POST',
+      headers: {'Content-Type':'application/Json'},
+      body: data
+    });
   }
 
   return (
@@ -69,7 +90,7 @@ function ScreenArticlesBySource(props) {
                   }
                   actions={[
                       <Icon type="read" key="ellipsis2" onClick={() => showModal(article.title,article.content)} />,
-                      <Icon type="like" key="ellipsis" onClick={()=> {props.addToWishList(article)}} />
+                      <Icon type="like" key="ellipsis" onClick={()=> saveArticle(article)} />
                   ]}
                   >
 
